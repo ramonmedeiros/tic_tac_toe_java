@@ -38,9 +38,9 @@ public class Controller {
       mav.setViewName("error");
       return mav;
     }
+}
     
-    
-    @RequestMapping("/login")
+ /*   @RequestMapping("/login")
     @app.route("/login", methods=[POST])
     def login():
         global users
