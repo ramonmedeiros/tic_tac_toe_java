@@ -7,7 +7,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.assertj.core.util.Arrays;
+import java.util.List;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -25,8 +26,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-
-import ch.qos.logback.classic.db.names.ColumnName;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = tic_tac_toe.Application.class)
@@ -120,36 +119,80 @@ public class ControllerTest {
 
 	@Test
 	public void getNonExistingGame() throws Exception {
-		mvc.perform(MockMvcRequestBuilders.get("/game/non-exist").accept(MediaType.APPLICATION_JSON)
-				.param(TOKEN, this.X_token)).andExpect(status().is4xxClientError());
+		mvc.perform(MockMvcRequestBuilders.get("/game/non-exist").accept(MediaType.APPLICATION_JSON).param(TOKEN,
+				this.X_token)).andExpect(status().is4xxClientError());
 	}
-	
+
 	@Test
 	public void getAvailablePlayers() throws Exception {
 		MvcResult game = mvc.perform(
 				MockMvcRequestBuilders.get(this.gameURI).accept(MediaType.APPLICATION_JSON).param(TOKEN, this.X_token))
 				.andExpect(status().isOk()).andReturn();
 		JSONObject response = (JSONObject) jsonparser.parse(game.getResponse().getContentAsString());
-		String gameInfo = (String) response.get("players");
-		assertTrue(gameInfo.contains("X"));
-		assertTrue(gameInfo.contains("O"));
+		List<String> players = (JSONArray) response.get("players");
+		assertEquals(players.get(0), "X");
 	}
 
 	@Test
-	public void doMove() throws Exception {
+	public void doMoveLine() throws Exception {
 		MultiValueMap<String, String> xparams = new LinkedMultiValueMap<>();
 		xparams.add(COLUMN, "0");
 		xparams.add(LINE, "0");
 		xparams.add(TOKEN, this.X_token);
 		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).accept(MediaType.APPLICATION_JSON).params(xparams))
 				.andExpect(status().isOk());
-		
+
 		MvcResult game = mvc.perform(
 				MockMvcRequestBuilders.get(this.gameURI).accept(MediaType.APPLICATION_JSON).param(TOKEN, this.X_token))
 				.andExpect(status().isOk()).andReturn();
 		JSONObject response = (JSONObject) jsonparser.parse(game.getResponse().getContentAsString());
-		Object[][] boardString = (Object[][]) response.get("board");
-		//assertEquals(board[0][0], "X");
+		List<List<String>> board = (JSONArray) response.get("board");
+		assertEquals(board.get(0).get(0), "X");
+	}
+
+	@Test
+	public void doMoveSamePlace() throws Exception {
+		// do first move
+		MultiValueMap<String, String> xparams = new LinkedMultiValueMap<>();
+		xparams.add(COLUMN, "0");
+		xparams.add(LINE, "0");
+		xparams.add(TOKEN, this.X_token);
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).accept(MediaType.APPLICATION_JSON).params(xparams))
+				.andExpect(status().isOk());
+
+		// assert first move
+		MvcResult firstMove = mvc.perform(
+				MockMvcRequestBuilders.get(this.gameURI).accept(MediaType.APPLICATION_JSON).param(TOKEN, this.X_token))
+				.andExpect(status().isOk()).andReturn();
+		JSONObject response = (JSONObject) jsonparser.parse(firstMove.getResponse().getContentAsString());
+		List<List<String>> board = (JSONArray) response.get("board");
+		assertEquals(board.get(0).get(0), "X");
+
+		// try to do same move and expect error
+		MultiValueMap<String, String> oparams = new LinkedMultiValueMap<>();
+		oparams.add(COLUMN, "0");
+		oparams.add(LINE, "0");
+		oparams.add(TOKEN, this.O_token);
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).accept(MediaType.APPLICATION_JSON).params(oparams))
+				.andExpect(status().isForbidden());
+
+	}
+	
+	@Test
+	public void doMoveColumn() throws Exception {
+		MultiValueMap<String, String> xparams = new LinkedMultiValueMap<>();
+		xparams.add(COLUMN, "1");
+		xparams.add(LINE, "0");
+		xparams.add(TOKEN, this.X_token);
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).accept(MediaType.APPLICATION_JSON).params(xparams))
+				.andExpect(status().isOk());
+
+		MvcResult game = mvc.perform(
+				MockMvcRequestBuilders.get(this.gameURI).accept(MediaType.APPLICATION_JSON).param(TOKEN, this.X_token))
+				.andExpect(status().isOk()).andReturn();
+		JSONObject response = (JSONObject) jsonparser.parse(game.getResponse().getContentAsString());
+		List<List<String>> board = (JSONArray) response.get("board");
+		assertEquals(board.get(0).get(1), "X");
 	}
 
 }

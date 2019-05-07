@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -54,7 +55,14 @@ public class Game {
 		// LOGGER.info(Arrays.deepToString(board));
 		return board;
 	}
-
+	
+	public List<List<String>> getListBoard() {
+		List<List<String>> lists = new ArrayList<>();
+			for (String[] lines : this.getBoard()) {
+				lists.add(Arrays.asList(lines));
+		}
+			return lists;
+	}
 	public String getWinner() {
 		return this.winner;
 	}

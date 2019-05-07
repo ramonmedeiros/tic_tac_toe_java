@@ -40,13 +40,11 @@ public class Controller {
 	// Total control - setup a model and return the view name yourself. Or
 	// consider subclassing ExceptionHandlerExceptionResolver (see below).
 	@ExceptionHandler(Exception.class)
-	public ModelAndView handleError(HttpServletRequest req, Exception ex) {
+	public ResponseEntity<String> handleError(HttpServletRequest req, Exception ex) {
 		LOGGER.info("Request: " + req.getRequestURL() + " raised " + ex);
-
-		ModelAndView mav = new ModelAndView();
-		mav.addObject("exception", ex);
-		mav.setViewName("error");
-		return mav;
+		JSONObject resp = new JSONObject();
+		resp.put("error", ex.getMessage());
+		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.FORBIDDEN);
 	}
 
 	@RequestMapping(value = "/login", method = RequestMethod.POST, params = { USERNAME }, produces = "application/json")
@@ -90,7 +88,7 @@ public class Controller {
 		}
 		
 		JSONObject resp = new JSONObject();
-		resp.put("board", this.games.get(uuid).getBoard());
+		resp.put("board", this.games.get(uuid).getListBoard());
 		resp.put("winner", this.games.get(uuid).getWinner());
 		resp.put("players", this.games.get(uuid).getPlayers());
 		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.OK); 
