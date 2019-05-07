@@ -1,9 +1,6 @@
 package tic_tac_toe;
 
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.ModelAndView;
-
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -12,13 +9,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;;
+import org.json.simple.JSONObject;
 
 @RestController
 public class Controller {
@@ -37,16 +34,24 @@ public class Controller {
 		return TITLE;
 	}
 
-	// Total control - setup a model and return the view name yourself. Or
-	// consider subclassing ExceptionHandlerExceptionResolver (see below).
-	@ExceptionHandler(Exception.class)
+	// handles errors on game
+	@ExceptionHandler(GameErrorException.class)
 	public ResponseEntity<String> handleError(HttpServletRequest req, Exception ex) {
 		LOGGER.info("Request: " + req.getRequestURL() + " raised " + ex);
 		JSONObject resp = new JSONObject();
 		resp.put("error", ex.getMessage());
 		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.FORBIDDEN);
 	}
+	
+	@ExceptionHandler(FinishException.class)
+	public ResponseEntity<String> handleFinish(HttpServletRequest req, Exception ex) {
+		LOGGER.info("Request: " + req.getRequestURL() + " raised " + ex);
+		JSONObject resp = new JSONObject();
+		resp.put("error", ex.getMessage());
+		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.ACCEPTED);
+	}
 
+	@CrossOrigin
 	@RequestMapping(value = "/login", method = RequestMethod.POST, params = { USERNAME }, produces = "application/json")
 	public String login(@RequestParam(USERNAME) String username) {
 		String token = UUID.randomUUID().toString();
@@ -56,6 +61,7 @@ public class Controller {
 		return ret.toString();
 	}
 
+	@CrossOrigin
 	@RequestMapping(value = "/logout", method = RequestMethod.POST, params = { USERNAME,
 			TOKEN }, produces = "application/json")
 	public ResponseEntity<String> logout(@RequestParam(USERNAME) String username, @RequestParam(TOKEN) String token) {
@@ -66,11 +72,13 @@ public class Controller {
 		return new ResponseEntity<>("not found", HttpStatus.NOT_FOUND);
 	}
 
+	@CrossOrigin
 	@RequestMapping(value = "/game", method = RequestMethod.GET)
-	public String gameGET() {
-		return this.games.keySet().toString();
+	public ResponseEntity<String> gameGET() {
+		return new ResponseEntity<>(this.games.keySet().toString(), HttpStatus.OK);
 	}
 
+	@CrossOrigin
 	@RequestMapping(value = "/game", method=RequestMethod.POST,params = {TOKEN}, produces = "application/json")
 	public ResponseEntity<String> gamePOST(@RequestParam(TOKEN) String token) {
 		  if (this.users.containsValue(token) == false) {
@@ -81,6 +89,7 @@ public class Controller {
 		  return new ResponseEntity<>(game.game_id, HttpStatus.OK); 
 	}
 
+	@CrossOrigin
 	@RequestMapping(value = "/game/{uuid}", method=RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<String> getGameUuid(@PathVariable("uuid") String uuid) {
 		if (this.games.containsKey(uuid) == false) {
@@ -94,6 +103,7 @@ public class Controller {
 		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.OK); 
 	}
 	
+	@CrossOrigin
 	@RequestMapping(value = "/game/{uuid}", method=RequestMethod.POST, params = {TOKEN, LINE, COLUMN}, produces = "application/json")
 	public ResponseEntity<String> postGameUuid(@PathVariable("uuid") String uuid, @RequestParam(TOKEN) String token, @RequestParam(LINE) String line, @RequestParam(COLUMN) String column) {
 		if (this.games.containsKey(uuid) == false) {
@@ -110,7 +120,7 @@ public class Controller {
 		return new ResponseEntity<>("failed", HttpStatus.FORBIDDEN);
 	}
 	
-	
+	@CrossOrigin
 	@RequestMapping(value = "/game/{uuid}", method=RequestMethod.DELETE, params = {TOKEN}, produces = "application/json")
 	public ResponseEntity<String> deleteGameUuid(@PathVariable("uuid") String uuid, @RequestParam(TOKEN) String token) {
 		if (this.games.containsKey(uuid) == false) {
@@ -124,6 +134,7 @@ public class Controller {
 		return new ResponseEntity<>("deleted", HttpStatus.OK);
 	}
 	
+	@CrossOrigin
 	@RequestMapping(value = "/game/{uuid}/player", method=RequestMethod.POST, params = {TOKEN, PLAYER}, produces = "application/json")
 	public ResponseEntity<String> addPlayer(@PathVariable("uuid") String uuid, @RequestParam(TOKEN) String token, @RequestParam(PLAYER) String player) {
 		if (this.games.containsKey(uuid) == false) {
@@ -142,6 +153,7 @@ public class Controller {
 		return new ResponseEntity<>("done", HttpStatus.OK);
 	}
 	
+	@CrossOrigin
 	@RequestMapping(value = "/game/{uuid}/player", params = {TOKEN}, method=RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<String> getPlayers(@PathVariable("uuid") String uuid, @RequestParam(TOKEN) String token) {
 		if (this.games.containsKey(uuid) == false) {

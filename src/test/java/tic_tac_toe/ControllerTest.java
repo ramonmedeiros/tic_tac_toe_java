@@ -2,12 +2,12 @@ package tic_tac_toe;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -177,7 +177,7 @@ public class ControllerTest {
 				.andExpect(status().isForbidden());
 
 	}
-	
+
 	@Test
 	public void doMoveColumn() throws Exception {
 		MultiValueMap<String, String> xparams = new LinkedMultiValueMap<>();
@@ -193,6 +193,37 @@ public class ControllerTest {
 		JSONObject response = (JSONObject) jsonparser.parse(game.getResponse().getContentAsString());
 		List<List<String>> board = (JSONArray) response.get("board");
 		assertEquals(board.get(0).get(1), "X");
+	}
+
+	@Test
+	public void doWinGame() throws Exception {
+		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+
+		// board[0][0] == O
+		params.setAll(Map.of(COLUMN, "0", LINE, "0", TOKEN, this.O_token));
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).accept(MediaType.APPLICATION_JSON).params(params))
+				.andExpect(status().isOk());
+
+		// board[1][1] == X
+		params.setAll(Map.of(COLUMN, "1", LINE, "1", TOKEN, this.X_token));
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).accept(MediaType.APPLICATION_JSON).params(params))
+				.andExpect(status().isOk());
+
+		// board[0][1] == O
+		params.setAll(Map.of(COLUMN, "0", LINE, "1", TOKEN, this.O_token));
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).accept(MediaType.APPLICATION_JSON).params(params))
+				.andExpect(status().isOk());
+
+		// board[1][2] == X
+		params.setAll(Map.of(COLUMN, "1", LINE, "2", TOKEN, this.X_token));
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).accept(MediaType.APPLICATION_JSON).params(params))
+				.andExpect(status().isOk());
+
+		// board[0][2] == O
+		params.setAll(Map.of(COLUMN, "0", LINE, "2", TOKEN, this.O_token));
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).accept(MediaType.APPLICATION_JSON).params(params))
+				.andExpect(status().isAccepted());
+
 	}
 
 }
