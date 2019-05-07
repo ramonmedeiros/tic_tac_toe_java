@@ -3,6 +3,7 @@ package tic_tac_toe;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;;
 
 @RestController
@@ -81,7 +83,7 @@ public class Controller {
 		  return new ResponseEntity<>(game.game_id, HttpStatus.OK); 
 	}
 
-	@RequestMapping(value = "/game/**", method=RequestMethod.GET, produces = "application/json")
+	@RequestMapping(value = "/game/{uuid}", method=RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<String> getGameUuid(@PathVariable("uuid") String uuid) {
 		if (this.games.containsKey(uuid) == false) {
 			return new ResponseEntity<>("not found", HttpStatus.NOT_FOUND); 
@@ -94,7 +96,7 @@ public class Controller {
 		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.OK); 
 	}
 	
-	@RequestMapping(value = "/game/**", method=RequestMethod.POST, params = {TOKEN, LINE, COLUMN}, produces = "application/json")
+	@RequestMapping(value = "/game/{uuid}", method=RequestMethod.POST, params = {TOKEN, LINE, COLUMN}, produces = "application/json")
 	public ResponseEntity<String> postGameUuid(@PathVariable("uuid") String uuid, @RequestParam(TOKEN) String token, @RequestParam(LINE) String line, @RequestParam(COLUMN) String column) {
 		if (this.games.containsKey(uuid) == false) {
 			return new ResponseEntity<>("not found", HttpStatus.NOT_FOUND); 
@@ -111,7 +113,7 @@ public class Controller {
 	}
 	
 	
-	@RequestMapping(value = "/game/**", method=RequestMethod.DELETE, params = {TOKEN}, produces = "application/json")
+	@RequestMapping(value = "/game/{uuid}", method=RequestMethod.DELETE, params = {TOKEN}, produces = "application/json")
 	public ResponseEntity<String> deleteGameUuid(@PathVariable("uuid") String uuid, @RequestParam(TOKEN) String token) {
 		if (this.games.containsKey(uuid) == false) {
 			return new ResponseEntity<>("not found", HttpStatus.NOT_FOUND); 
