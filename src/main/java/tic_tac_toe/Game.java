@@ -55,14 +55,15 @@ public class Game {
 		// LOGGER.info(Arrays.deepToString(board));
 		return board;
 	}
-	
+
 	public List<List<String>> getListBoard() {
 		List<List<String>> lists = new ArrayList<>();
-			for (String[] lines : this.getBoard()) {
-				lists.add(Arrays.asList(lines));
+		for (String[] lines : this.getBoard()) {
+			lists.add(Arrays.asList(lines));
 		}
-			return lists;
+		return lists;
 	}
+
 	public String getWinner() {
 		return this.winner;
 	}
@@ -79,7 +80,7 @@ public class Game {
 
 	public String getPlayerByToken(String token) {
 		for (Map.Entry<String, String> entry : this.players.entrySet()) {
-			if (entry.getValue() == token) {
+			if (token.compareTo(entry.getValue()) == 0) {
 				return entry.getKey();
 			}
 		}
