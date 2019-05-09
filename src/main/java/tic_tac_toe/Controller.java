@@ -32,7 +32,7 @@ public class Controller {
 	final String PLAYER = "player";
 	private static final Logger LOGGER = Logger.getLogger(Game.class.getName());
 
-	@CrossOrigin(origins = "http://localhost:8000")
+	@CrossOrigin(origins = "http://127.0.0.1:8000")
 	@GetMapping("/")
 	public String index() {
 		return TITLE;
@@ -55,7 +55,7 @@ public class Controller {
 		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.ACCEPTED);
 	}
 
-	@CrossOrigin(origins = "http://localhost:8000")
+	@CrossOrigin(origins = "http://127.0.0.1:8000")
 	@PostMapping(value = "/login", produces = "application/json")
 	public String login(@RequestBody Map<String, String> user) {
 		String username = user.get(USERNAME);
@@ -66,7 +66,7 @@ public class Controller {
 		return ret.toString();
 	}
 
-	@CrossOrigin(origins = "http://localhost:8000")
+	@CrossOrigin(origins = "http://127.0.0.1:8000")
 	@PostMapping(value = "/logout", produces = "application/json")
 	public ResponseEntity<String> logout(@RequestBody Map<String, String> userToken) {
 		String username = userToken.get(USERNAME);
@@ -78,13 +78,13 @@ public class Controller {
 		return new ResponseEntity<>("not found", HttpStatus.NOT_FOUND);
 	}
 
-	@CrossOrigin(origins = "http://localhost:8000")
+	@CrossOrigin(origins = "http://127.0.0.1:8000")
 	@GetMapping(value = "/game")
 	public ResponseEntity<String> gameGET() {
 		return new ResponseEntity<>(this.games.keySet().toString(), HttpStatus.OK);
 	}
 
-	@CrossOrigin(origins = "http://localhost:8000")
+	@CrossOrigin(origins = "http://127.0.0.1:8000")
 	@PostMapping(value = "/game", produces = "application/json")
 	public ResponseEntity<String> gamePOST(@RequestBody Map<String, String> tokenP) {
 		String token = tokenP.get(TOKEN);
@@ -96,7 +96,7 @@ public class Controller {
 		return new ResponseEntity<>(game.game_id, HttpStatus.OK);
 	}
 
-	@CrossOrigin(origins = "http://localhost:8000")
+	@CrossOrigin(origins = "http://127.0.0.1:8000")
 	@GetMapping(value = "/game/{uuid}", produces = "application/json")
 	public ResponseEntity<String> getGameUuid(@PathVariable("uuid") String uuid) {
 		if (this.games.containsKey(uuid) == false) {
@@ -114,7 +114,7 @@ public class Controller {
 		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.OK);
 	}
 
-	@CrossOrigin(origins = "http://localhost:8000")
+	@CrossOrigin(origins = "http://127.0.0.1:8000")
 	@PostMapping(value = "/game/{uuid}", produces = "application/json")
 	public ResponseEntity<String> postGameUuid(@PathVariable("uuid") String uuid,
 			@RequestBody Map<String, String> params) {
@@ -135,7 +135,7 @@ public class Controller {
 		return new ResponseEntity<>("failed", HttpStatus.FORBIDDEN);
 	}
 
-	@CrossOrigin(origins = "http://localhost:8000")
+	@CrossOrigin(origins = "http://127.0.0.1:8000")
 	@DeleteMapping(value = "/game/{uuid}", produces = "application/json")
 	public ResponseEntity<String> deleteGameUuid(@PathVariable("uuid") String uuid,
 			@RequestBody Map<String, String> params) {
@@ -151,7 +151,7 @@ public class Controller {
 		return new ResponseEntity<>("deleted", HttpStatus.OK);
 	}
 
-	@CrossOrigin(origins = "http://localhost:8000")
+	@CrossOrigin(origins = "http://127.0.0.1:8000")
 	@PostMapping(value = "/game/{uuid}/player", produces = "application/json")
 	public ResponseEntity<String> addPlayer(@PathVariable("uuid") String uuid,
 			@RequestBody Map<String, String> params) {
@@ -174,7 +174,7 @@ public class Controller {
 		return new ResponseEntity<>("done", HttpStatus.OK);
 	}
 
-	@CrossOrigin(origins = "http://localhost:8000")
+	@CrossOrigin(origins = "http://127.0.0.1:8000")
 	@GetMapping(value = "/game/{uuid}/player", params = { TOKEN }, produces = "application/json")
 	public ResponseEntity<String> getPlayers(@PathVariable("uuid") String uuid, @RequestParam(TOKEN) String token) {
 		if (this.games.containsKey(uuid) == false) {
