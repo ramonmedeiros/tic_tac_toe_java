@@ -1,7 +1,10 @@
 package tic_tac_toe;
 
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -81,7 +84,9 @@ public class Controller {
 	@CrossOrigin(origins = "http://127.0.0.1:8000")
 	@GetMapping(value = "/game")
 	public ResponseEntity<String> gameGET() {
-		return new ResponseEntity<>(this.games.keySet().toString(), HttpStatus.OK);
+		JSONObject resp = new JSONObject();
+		resp.put("games", new ArrayList(this.games.keySet()));
+		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.OK);
 	}
 
 	@CrossOrigin(origins = "http://127.0.0.1:8000")

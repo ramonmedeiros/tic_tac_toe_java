@@ -2,6 +2,7 @@ package tic_tac_toe;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,12 +45,6 @@ public class ControllerTest {
 
 	@Autowired
 	private MockMvc mvc;
-
-	@Test
-	public void getHello() throws Exception {
-		mvc.perform(MockMvcRequestBuilders.get("/").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-				.andExpect(content().string(equalTo("Tic Tac Toe by Ramon Medeiros")));
-	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -103,6 +98,21 @@ public class ControllerTest {
 		// logout user O
 		mvc.perform(MockMvcRequestBuilders.post("/logout").contentType(MediaType.APPLICATION_JSON).content(userOlogout))
 				.andExpect(status().isOk());
+	}
+
+	@Test
+	public void getHello() throws Exception {
+		mvc.perform(MockMvcRequestBuilders.get("/").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().string(equalTo("Tic Tac Toe by Ramon Medeiros")));
+	}
+
+	@Test
+	public void getGames() throws Exception {
+		MvcResult game = mvc.perform(MockMvcRequestBuilders.get("/game").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk()).andReturn();
+		JSONObject games = (JSONObject) jsonparser.parse(game.getResponse().getContentAsString());
+		List<String> gamesList = (List) games.get("games");
+		assertTrue(gamesList.contains(this.gameUUID));
 	}
 
 	@Test
