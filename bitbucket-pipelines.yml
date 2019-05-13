@@ -3,5 +3,5 @@ pipelines:
   default:
     - step:
         script:
-          - mvn -B verify
+          - mvn -f backend/pom.xml -B verify
 
