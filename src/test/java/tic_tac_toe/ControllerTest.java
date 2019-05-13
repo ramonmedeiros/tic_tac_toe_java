@@ -70,12 +70,16 @@ public class ControllerTest {
 		MvcResult newGame = mvc
 				.perform(MockMvcRequestBuilders.post("/game").contentType(MediaType.APPLICATION_JSON)
 						.content(new JSONObject(Map.of(TOKEN, this.X_token)).toJSONString()))
-				.andExpect(status().isOk()).andReturn();
+				.andExpect(status().isCreated()).andReturn();
 		this.gameUUID = newGame.getResponse().getContentAsString();
 		this.gameURI = String.format("/game/%s", this.gameUUID);
-
-		// register player X
+		
+		// when not register, player should return 404
 		String gameplayeruri = String.format("/game/%s/player", this.gameUUID);
+		mvc.perform(MockMvcRequestBuilders.get(gameplayeruri).contentType(MediaType.APPLICATION_JSON).param(TOKEN, this.X_token))
+				.andExpect(status().isNotFound());
+		
+		// register player X
 		String xparams = new JSONObject(Map.of(PLAYER, "X", TOKEN, this.X_token)).toJSONString();
 		mvc.perform(MockMvcRequestBuilders.post(gameplayeruri).contentType(MediaType.APPLICATION_JSON).content(xparams))
 				.andExpect(status().isOk());
@@ -116,12 +120,33 @@ public class ControllerTest {
 	}
 
 	@Test
+	public void validateXToken() throws Exception {
+		// validate user X
+		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+		params.add(TOKEN, this.X_token);
+		params.add(USERNAME, this.X_USERNAME);
+		mvc.perform(MockMvcRequestBuilders.get("/token").contentType(MediaType.APPLICATION_JSON).params(params))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	public void invalidToken() throws Exception {
+		// validate user X
+		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+		params.add(TOKEN, "invalid-token");
+		params.add(USERNAME, this.X_USERNAME);
+		mvc.perform(MockMvcRequestBuilders.get("/token").contentType(MediaType.APPLICATION_JSON).params(params))
+				.andExpect(status().isNotFound());
+	}	
+	
+	@Test
 	public void getPlayerByToken() throws Exception {
 		String gameplayeruri = String.format("%s/player", this.gameURI);
 		MvcResult newGame = mvc.perform(
 				MockMvcRequestBuilders.get(gameplayeruri).accept(MediaType.APPLICATION_JSON).param(TOKEN, this.X_token))
 				.andExpect(status().isOk()).andReturn();
-		assertEquals(newGame.getResponse().getContentAsString(), "X");
+		JSONObject player = (JSONObject) jsonparser.parse(newGame.getResponse().getContentAsString());
+		assertEquals(player.get(PLAYER), "X");
 	}
 
 	@Test
@@ -173,7 +198,7 @@ public class ControllerTest {
 		// try to do same move and expect error
 		String oparams = new JSONObject(Map.of(COLUMN, "0", LINE, "0", TOKEN, this.O_token)).toJSONString();
 		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).contentType(MediaType.APPLICATION_JSON).content(oparams))
-				.andExpect(status().isForbidden());
+				.andExpect(status().isBadRequest());
 
 	}
 
@@ -192,8 +217,6 @@ public class ControllerTest {
 
 	@Test
 	public void doWinGame() throws Exception {
-		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-
 		// board[0][0] == O
 		String b00 = new JSONObject(Map.of(COLUMN, "0", LINE, "0", TOKEN, this.O_token)).toJSONString();
 		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).contentType(MediaType.APPLICATION_JSON).content(b00))
@@ -219,6 +242,55 @@ public class ControllerTest {
 		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).contentType(MediaType.APPLICATION_JSON).content(b02))
 				.andExpect(status().isAccepted());
 
+	}
+	
+	@Test
+	public void drawGame() throws Exception {
+
+		// board[0][2] == O
+		String b02 = new JSONObject(Map.of(COLUMN, "2", LINE, "0", TOKEN, this.O_token)).toJSONString();
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).contentType(MediaType.APPLICATION_JSON).content(b02))
+				.andExpect(status().isOk());
+
+		// board[0][0] == X
+		String b00 = new JSONObject(Map.of(COLUMN, "0", LINE, "0", TOKEN, this.X_token)).toJSONString();
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).contentType(MediaType.APPLICATION_JSON).content(b00))
+				.andExpect(status().isOk());
+
+		// board[0][1] == O
+		String b01 = new JSONObject(Map.of(COLUMN, "1", LINE, "0", TOKEN, this.O_token)).toJSONString();
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).contentType(MediaType.APPLICATION_JSON).content(b01))
+				.andExpect(status().isOk());
+
+		// board[1][1] == X
+		String b11 = new JSONObject(Map.of(COLUMN, "1", LINE, "1", TOKEN, this.X_token)).toJSONString();
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).contentType(MediaType.APPLICATION_JSON).content(b11))
+				.andExpect(status().isOk());
+
+		// board[1][0] == O
+		String b10 = new JSONObject(Map.of(COLUMN, "0", LINE, "1", TOKEN, this.O_token)).toJSONString();
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).contentType(MediaType.APPLICATION_JSON).content(b10))
+				.andExpect(status().isOk());
+
+		// board[1][2] == X
+		String b12 = new JSONObject(Map.of(COLUMN, "2", LINE, "1", TOKEN, this.X_token)).toJSONString();
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).contentType(MediaType.APPLICATION_JSON).content(b12))
+				.andExpect(status().isOk());
+
+		// board[2][0] == O
+		String b20 = new JSONObject(Map.of(COLUMN, "0", LINE, "2", TOKEN, this.O_token)).toJSONString();
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).contentType(MediaType.APPLICATION_JSON).content(b20))
+						.andExpect(status().isOk());
+
+		// board[2][1] == X
+		String b21 = new JSONObject(Map.of(COLUMN, "1", LINE, "2", TOKEN, this.X_token)).toJSONString();
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).contentType(MediaType.APPLICATION_JSON).content(b21))
+				.andExpect(status().isOk());
+		
+		// board[2][2] == O
+		String b22 = new JSONObject(Map.of(COLUMN, "2", LINE, "2", TOKEN, this.O_token)).toJSONString();
+		mvc.perform(MockMvcRequestBuilders.post(this.gameURI).contentType(MediaType.APPLICATION_JSON).content(b22))
+						.andExpect(status().isAccepted());
 	}
 
 }

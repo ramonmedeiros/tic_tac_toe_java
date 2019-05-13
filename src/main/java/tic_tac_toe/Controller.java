@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -35,7 +36,7 @@ public class Controller {
 	final String PLAYER = "player";
 	private static final Logger LOGGER = Logger.getLogger(Game.class.getName());
 
-	@CrossOrigin(origins = "http://127.0.0.1:8000")
+	@CrossOrigin(origins = "*")
 	@GetMapping("/")
 	public String index() {
 		return TITLE;
@@ -46,19 +47,40 @@ public class Controller {
 	public ResponseEntity<String> handleError(HttpServletRequest req, Exception ex) {
 		LOGGER.info("Request: " + req.getRequestURL() + " raised " + ex);
 		JSONObject resp = new JSONObject();
-		resp.put("error", ex.getMessage());
-		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.FORBIDDEN);
+		resp.put("message", ex.getMessage());
+		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.BAD_REQUEST);
+	}
+	
+	// handles errors on game
+	@ExceptionHandler(DrawException.class)
+	public ResponseEntity<String> handleDraw(HttpServletRequest req, Exception ex) {
+		LOGGER.info("Request: " + req.getRequestURL() + " raised " + ex);
+		JSONObject resp = new JSONObject();
+		resp.put("message", ex.getMessage());
+		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.ACCEPTED);
 	}
 
 	@ExceptionHandler(FinishException.class)
 	public ResponseEntity<String> handleFinish(HttpServletRequest req, Exception ex) {
 		LOGGER.info("Request: " + req.getRequestURL() + " raised " + ex);
 		JSONObject resp = new JSONObject();
-		resp.put("error", ex.getMessage());
+		resp.put("message", ex.getMessage());
 		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.ACCEPTED);
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8000")
+	@CrossOrigin(origins = "*")
+	@GetMapping(value = "/token", params = { TOKEN, USERNAME }, produces = "application/json")
+	public ResponseEntity<String> validateToken(@RequestParam(TOKEN) String token,
+			@RequestParam(USERNAME) String username) {
+		for (Entry<String, String> user1 : this.users.entrySet()) {
+			if ((user1.getKey().compareTo(username) == 0) && (user1.getValue().compareTo(token) == 0)) {
+				return new ResponseEntity<>("valid", HttpStatus.OK);
+			}
+		}
+		return new ResponseEntity<>("invalid", HttpStatus.NOT_FOUND);
+	}
+
+	@CrossOrigin(origins = "*")
 	@PostMapping(value = "/login", produces = "application/json")
 	public String login(@RequestBody Map<String, String> user) {
 		String username = user.get(USERNAME);
@@ -69,7 +91,7 @@ public class Controller {
 		return ret.toString();
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8000")
+	@CrossOrigin(origins = "*")
 	@PostMapping(value = "/logout", produces = "application/json")
 	public ResponseEntity<String> logout(@RequestBody Map<String, String> userToken) {
 		String username = userToken.get(USERNAME);
@@ -81,7 +103,7 @@ public class Controller {
 		return new ResponseEntity<>("not found", HttpStatus.NOT_FOUND);
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8000")
+	@CrossOrigin(origins = "*")
 	@GetMapping(value = "/game")
 	public ResponseEntity<String> gameGET() {
 		JSONObject resp = new JSONObject();
@@ -89,7 +111,7 @@ public class Controller {
 		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.OK);
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8000")
+	@CrossOrigin(origins = "*")
 	@PostMapping(value = "/game", produces = "application/json")
 	public ResponseEntity<String> gamePOST(@RequestBody Map<String, String> tokenP) {
 		String token = tokenP.get(TOKEN);
@@ -98,10 +120,10 @@ public class Controller {
 		}
 		Game game = new Game();
 		this.games.put(game.game_id, game);
-		return new ResponseEntity<>(game.game_id, HttpStatus.OK);
+		return new ResponseEntity<>(game.game_id, HttpStatus.CREATED);
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8000")
+	@CrossOrigin(origins = "*")
 	@GetMapping(value = "/game/{uuid}", produces = "application/json")
 	public ResponseEntity<String> getGameUuid(@PathVariable("uuid") String uuid) {
 		if (this.games.containsKey(uuid) == false) {
@@ -119,7 +141,7 @@ public class Controller {
 		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.OK);
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8000")
+	@CrossOrigin(origins = "*")
 	@PostMapping(value = "/game/{uuid}", produces = "application/json")
 	public ResponseEntity<String> postGameUuid(@PathVariable("uuid") String uuid,
 			@RequestBody Map<String, String> params) {
@@ -140,7 +162,7 @@ public class Controller {
 		return new ResponseEntity<>("failed", HttpStatus.FORBIDDEN);
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8000")
+	@CrossOrigin(origins = "*")
 	@DeleteMapping(value = "/game/{uuid}", produces = "application/json")
 	public ResponseEntity<String> deleteGameUuid(@PathVariable("uuid") String uuid,
 			@RequestBody Map<String, String> params) {
@@ -156,7 +178,7 @@ public class Controller {
 		return new ResponseEntity<>("deleted", HttpStatus.OK);
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8000")
+	@CrossOrigin(origins = "*")
 	@PostMapping(value = "/game/{uuid}/player", produces = "application/json")
 	public ResponseEntity<String> addPlayer(@PathVariable("uuid") String uuid,
 			@RequestBody Map<String, String> params) {
@@ -179,7 +201,7 @@ public class Controller {
 		return new ResponseEntity<>("done", HttpStatus.OK);
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8000")
+	@CrossOrigin(origins = "*")
 	@GetMapping(value = "/game/{uuid}/player", params = { TOKEN }, produces = "application/json")
 	public ResponseEntity<String> getPlayers(@PathVariable("uuid") String uuid, @RequestParam(TOKEN) String token) {
 		if (this.games.containsKey(uuid) == false) {
@@ -189,7 +211,15 @@ public class Controller {
 			return new ResponseEntity<>("invalid token", HttpStatus.UNAUTHORIZED);
 		}
 
-		return new ResponseEntity<>(this.games.get(uuid).getPlayerByToken(token), HttpStatus.OK);
+		String player = this.games.get(uuid).getPlayerByToken(token);
+
+		if (player == null) {
+			return new ResponseEntity<>("not found", HttpStatus.NOT_FOUND);
+		}
+
+		JSONObject resp = new JSONObject();
+		resp.put("player", player);
+		return new ResponseEntity<>(resp.toJSONString(), HttpStatus.OK);
 	}
 
 }

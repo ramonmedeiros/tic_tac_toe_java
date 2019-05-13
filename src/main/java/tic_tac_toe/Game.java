@@ -165,7 +165,7 @@ public class Game {
 		Set<String> left_diagonal = new HashSet<String>();
 		left_diagonal.addAll(Arrays.asList(new String[] { board[0][0], board[1][1], board[2][2] }));
 		Set<String> right_diagonal = new HashSet<String>();
-		right_diagonal.addAll(Arrays.asList(new String[] { board[0][2], board[1][1], board[0][2] }));
+		right_diagonal.addAll(Arrays.asList(new String[] { board[0][2], board[1][1], board[2][0] }));
 
 		checkSet(left_diagonal, "Left diagonal filled by player");
 		checkSet(right_diagonal, "Right Diagonal filled by player");
@@ -208,6 +208,7 @@ public class Game {
 				}
 			}
 		}
+		this.winner = "DRAW";
 		throw new DrawException("Draw game", this.game_id);
 	}
 }
