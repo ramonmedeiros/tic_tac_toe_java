@@ -1,0 +1,9 @@
+How to run:
+
+At frontend dir:
+mvn package && java -jar target/frontend-1.0.jar
+
+At backend dir:
+mvn package && java -jar target/ramon-ttt-0.1.0.jar --server.port=5000
+
+Open the browser at http://localhost:8080
