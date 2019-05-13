@@ -1,17 +1,21 @@
 <!doctype html>
+<html>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 <title>Tic Tac Toe By Ramon Medeiros</title>
-<script src="{{ url_for('static', filename='functions.js') }}"></script>
-<section class="content">
-  <header>
+<script src="/static/functions.js"></script>
+
+<body>
+
     <div style="position: absolute;top: 8px; right: 16px;">
         <h3 id="login" style="display:inline"></h3><a id="link"><h3 id="message_link" style="display:inline"></h3> </a>
         <script>loginBallon();</script>
     </div>
-    {% block header %}{% endblock %}
-  </header>
-  {% block content %}{% endblock %}
-    <div id="flash"><h2 id="error"></h2></div>
-</section>
+  <h1>Games</h1>
+
+    <div id="listGames"></div>
+    <script>listGames();</script>
+    <input id="newGame" type="button" value="New Game" onclick="startNewGame();" />
+</body>
+</html>
