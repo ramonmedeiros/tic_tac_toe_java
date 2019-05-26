@@ -1,0 +1,2 @@
+language:  java
+#- mvn -f backend/pom.xml -B verify

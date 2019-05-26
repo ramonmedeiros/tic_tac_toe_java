@@ -1,7 +1,0 @@
-image: maven:3.6
-pipelines:
-  default:
-    - step:
-        script:
-          - mvn -f backend/pom.xml -B verify
-
