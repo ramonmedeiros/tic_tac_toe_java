@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/ramonmedeiros/tic_tac_toe_java.svg?branch=master)](https://travis-ci.org/ramonmedeiros/tic_tac_toe_java/)
-
+[![Coverage](https://codecov.io/gh/ramonmedeiros/tic_tac_toe_java/branch/master/graph/badge.svg)](https://codecov.io/gh/ramonmedeiros/tic_tac_toe_java/)
 # Ramon's tic tac toe java
 
 ## How to run
